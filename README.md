@@ -5,7 +5,35 @@ This repository empirically demonstrates the performance impact of **Linear Alge
 We compare two distinct implementation approaches to solve the exact same mathematical problem across scaled datasets:
 
 1. **Iterative Approach (Pure Python Loops):** Traditional element-wise processing using explicit loops.
+
 2. **Vectorized Approach (NumPy + Linear Algebra):** Optimized matrix operations leveraging hardware-level capabilities.
+
+## ⚡ Empirical Benchmark Results
+
+Below are real execution metrics captured from live endpoint tests processing **20,000 samples**:
+
+| Implementation | Samples | Execution Time | Processing Speed (Samples/sec) | Speedup Factor | Time Reduction (%) |
+| ----- | ----- | ----- | ----- | ----- | ----- |
+| **Unoptimized (Loops)** | 20,000 | **0.4309s** | \~46,414 samples/s | **1x (Baseline)** | **0% (Baseline)** |
+| **Vectorized (NumPy)** | 20,000 | **0.0031s** | \~6,451,612 samples/s | **\~139x Faster** 🚀 | **99.28% Less Time** ⚡ |
+
+### 📉 Time Reduction Breakdown (%)
+
+To calculate the exact percentage of processing time saved by switching to Linear Algebra vectorization:
+
+$$
+\text{Time Saved (\%)} = \left( 1 - \frac{\text{Time}_{\text{Vectorized}}}{\text{Time}_{\text{Unoptimized}}} \right) \times 100
+$$
+
+$$
+\text{Time Saved (\%)} = \left( 1 - \frac{0.0031\,\text{s}}{0.4309\,\text{s}} \right) \times 100 = (1 - 0.007194) \times 100 \approx \mathbf{99.28\%}
+$$
+
+* **Result:** The vectorized approach executed the optimization task using **99.28% less time** than the traditional loop implementation.
+
+$$
+\text{Speedup Multiple} = \frac{\text{Time}_{\text{Unoptimized}}}{\text{Time}_{\text{Vectorized}}} = \frac{0.4309\,\text{s}}{0.0031\,\text{s}} \approx \mathbf{139\times}
+$$
 
 ## 📐 Mathematical Foundation
 
@@ -31,7 +59,7 @@ $$
 
 ### 3. Gradient Descent & Vectorized Matrix Calculus
 
-To minimize $J(W, b)$ and optimize parameters, we compute partial derivatives with respect to $W$ and $b$. 
+To minimize $J(W, b)$ and optimize parameters, we compute partial derivatives with respect to $W$ and $b$.
 
 Applying the calculus chain rule yields a clean error term:
 
@@ -40,6 +68,7 @@ E = \hat{Y} - Y
 $$
 
 #### Iterative Computation (Loops):
+
 Computing gradients for each feature $j$ manually across all samples requires iterating element by element:
 
 $$
@@ -47,6 +76,7 @@ $$
 $$
 
 #### Vectorized Computation (Linear Algebra):
+
 Instead of sample-by-sample summation, we perform matrix multiplication using the transpose $X^T$ (shape $n \times m$):
 
 $$
@@ -70,7 +100,9 @@ $$
 ## 🚀 Why Vectorization Delivers Massive Speedups
 
 1. **Elimination of Python Interpreter Overhead:** Python `for` loops incur significant dynamic type-checking and memory allocation overhead at every iteration.
+
 2. **Low-Level Native Execution:** NumPy delegates matrix computations directly to C and Fortran optimized linear algebra libraries (such as BLAS and LAPACK).
+
 3. **Hardware-Level Parallelism (SIMD):** Modern CPUs use **SIMD** (*Single Instruction, Multiple Data*) architecture, executing identical mathematical operations across large data vectors in a single clock cycle.
 
 ## 🛠️ Testing the Live Endpoints
@@ -79,8 +111,8 @@ You can benchmark the execution speeds directly via cURL commands:
 
 ### 1. Unoptimized Endpoint (Iterative Loops)
 
-* **Description:** Processes model weight updates using pure Python loops.
 * **URL:** `http://162.35.24.220:8001/treinar-lento`
+
 * **cURL Example:**
 
 ```bash
@@ -90,15 +122,25 @@ curl -X 'POST' \
   -d ''
 ```
 
+* **Sample Response:**
+
+```json
+{
+  "metodo": "Sem otimização",
+  "amostras_processadas": 20000,
+  "tempo_segundos": 0.4309
+}
+```
+
 ### 2. Optimized Endpoint (Linear Algebra & Vectorization)
 
-* **Description:** Performs the same Logistic Regression training using vectorized NumPy matrix multiplications.
 * **URL:** `http://162.35.24.220:8002/treinar-rapido`
-* **cURL Example (1 Million Samples):**
+
+* **cURL Example:**
 
 ```bash
 curl -X 'POST' \
-  'http://162.35.24.220:8002/treinar-rapido?qtd_amostras=1000000' \
+  'http://162.35.24.220:8002/treinar-rapido?qtd_amostras=20000' \
   -H 'accept: application/json' \
   -d ''
 ```
@@ -110,31 +152,3 @@ curl -X 'POST' \
 ├── api_otimizada.py         # FastAPI endpoint with vectorized matrix training
 └── README.md                # Documentation and mathematical background
 ```
-
-## 💻 Local Setup
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/your-repo-name.git
-   cd your-repo-name
-   ```
-
-2. Create and activate a virtual environment:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
-
-3. Install dependencies:
-   ```bash
-   pip install fastapi uvicorn numpy
-   ```
-
-4. Run the services:
-   ```bash
-   # Unoptimized API (Port 8001)
-   uvicorn api_sem_otimizacao:app --host 0.0.0.0 --port 8001
-
-   # Vectorized API (Port 8002)
-   uvicorn api_otimizada:app --host 0.0.0.0 --port 8002
-   ```
