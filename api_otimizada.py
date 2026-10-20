@@ -5,7 +5,6 @@ import numpy as np
 
 app = FastAPI(title="API Otimizada com Álgebra Linear")
 
-# Habilitando o CORS para o navegador não bloquear requisições externas
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,7 +20,6 @@ def sigmoid(z):
 def treinar_rapido(qtd_amostras: int = 1_000_000):
     inicio = time.time()
     
-    # Gerando os dados em memória
     np.random.seed(42)
     X = np.random.randn(qtd_amostras, 5)
     y = np.random.randint(0, 2, size=qtd_amostras)
@@ -31,7 +29,6 @@ def treinar_rapido(qtd_amostras: int = 1_000_000):
     alpha = 0.01
     epocas = 5
     
-    # Otimização total com Álgebra Linear (Multiplicação matricial vetorizada)
     for epoch in range(epocas):
         z = np.dot(X, w) + b
         preds = sigmoid(z)
